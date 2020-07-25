@@ -26,9 +26,11 @@ function onStreamMessage(psClient, subscriptionName, cb) {
     const messageHandler = function(message) {
         const payload = {
             message: message,
+            ack: function() {
+                message.ack()
+            }
         }
         cb(payload)
-        message.ack()
     }
 
     subscription.on('message', messageHandler)
@@ -40,7 +42,8 @@ function main() {
     const ps = connect(config.projectId)
     let err = onStreamMessage(ps, config.subscriptionName,  function({message, ack}) {
         console.log(message.id, message.data.toString())
-        // ack()
+        // slow write db tai day
+        ack()
     })
     if(!err) {
         console.log('[err]: ', err)
