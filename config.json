@@ -1,0 +1,7 @@
+{
+    "projectId": "mediaone-thp",
+    "subscriptionNames": [
+        "projects/mediaone-thp/subscriptions/thp-client",
+        "projects/mediaone-thp/subscriptions/client-admin-log"
+    ]
+}

@@ -1,11 +1,10 @@
 // Imports the Google Cloud client library
-const {PubSub} = require('@google-cloud/pubsub');
-
-const config = {
-    projectId: 'mediaone-thp',// Your Google Cloud Platform project ID
-    topicName: 'projects/mediaone-thp/topics/stagging-common-log', // Name for the new topic to create
-    subscriptionName: "projects/mediaone-thp/subscriptions/thp-client"
-}
+const {PubSub} = require('@google-cloud/pubsub')
+const fs = require('fs')
+// const config = {
+//     projectId: 'mediaone-thp',// Your Google Cloud Platform project ID
+//     subscriptionName: "projects/mediaone-thp/subscriptions/thp-client"
+// }
 
 const err = {
     pubsub_not_found: "pubsub_not_found"
@@ -14,6 +13,11 @@ const err = {
 function connect(projectId) {
     const pubsub = new PubSub({projectId})
     return pubsub
+}
+
+function loadJsonConfig(path) {
+    let filedata = fs.readFileSync(path, 'utf8')
+    return JSON.parse(filedata)
 }
 
 // @cb = {}
@@ -39,15 +43,23 @@ function onStreamMessage(psClient, subscriptionName, cb) {
 
 function main() {
     // make client
+    let config = loadJsonConfig("config.json")
+    console.log(config)
     const ps = connect(config.projectId)
-    let err = onStreamMessage(ps, config.subscriptionName,  function({message, ack}) {
-        console.log(message.id, message.data.toString())
-        // slow write db tai day
-        ack()
-    })
-    if(!err) {
-        console.log('[err]: ', err)
+    for (let subscriptionName of config.subscriptionNames) {
+        console.log(subscriptionName)
+        let err = onStreamMessage(ps, subscriptionName,  function({message, ack}) {
+            console.log(subscriptionName,":", message.id, message.data.toString() + "\n")
+            // slow write db tai day
+            ack()
+        })
+        console.log("listen ", subscriptionName)
+        if(err) {
+            console.log('[err]: ', err)
+        }
     }
+
+
 }
 
 main()
